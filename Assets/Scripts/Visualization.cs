@@ -5,12 +5,16 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
+using InstrumentalAssistant.Utils;
 
 namespace InstrumentalAssistant
 {
     public class Visualization : MonoBehaviour
     {
         public float maxScale = 100f;
+        public bool stayMode = true;
+
+        private bool hasResult = false;
 
         private RectTransform[] m_elements;
         [SerializeField]
@@ -41,12 +45,22 @@ namespace InstrumentalAssistant
 
         private void Update()
         {
+            if (stayMode)
+            {
+                if (hasResult && m_pitchDetector.pitch == 0f)
+                    return;
+            }
+
             for (uint i = 0; i < m_elements.Length; ++i)
             {
                 m_elements[i].localScale = new Vector3(1f, m_pitchDetector.spectrums[i] * maxScale + 2, 0f);
             }
 
-            m_outputPitchValue.text = $"Pitch = {m_pitchDetector.pitch.ToString("F2")} Hz";
+            var equal = new EqualTemperamentNote(m_pitchDetector.pitch);
+            m_outputPitchValue.text = $"Note: {equal.noteName}{equal.octave} ({equal.deviationFreq.ToString("F2")})" +
+                $" Freq = {m_pitchDetector.pitch.ToString("F2")} Hz";
+
+            hasResult = true;
         }
     }
 }
