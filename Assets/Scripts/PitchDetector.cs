@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
+using InstrumentalAssistant.Utils;
 
 namespace InstrumentalAssistant
 {
@@ -65,6 +67,16 @@ namespace InstrumentalAssistant
             }
         }
 
+        public bool stayTextOutputMode = true;
+        public float stayTextOutputTime = 2f;
+
+        public EqualTemperamentNote note
+        {
+            get; private set;
+        } = new EqualTemperamentNote(0f);
+
+
+        #region Sub Classes
         private struct Peak
         {
             public float amplitude;
@@ -92,6 +104,7 @@ namespace InstrumentalAssistant
                 return a.index.CompareTo(b.index);
             }
         }
+        #endregion
 
 
         [SerializeField]
@@ -108,12 +121,19 @@ namespace InstrumentalAssistant
         private float m_refValue = 0.1f;
         private float m_threshold = 0.01f;
 
+        private float m_stayTextOutputTimeCounter = 0f;
+
         private int m_samplerate;
 
         private List<Peak> peaks = new List<Peak>();
 
         #region UnityObjects
         private AudioSource m_audioSource;
+        #endregion
+
+        #region UnityObjectFromInspector
+        [SerializeField]
+        private Text m_outputPitchValue;
         #endregion
 
         private void Start()
@@ -127,6 +147,40 @@ namespace InstrumentalAssistant
         private void Update()
         {
             PitchDetection();
+            note = new EqualTemperamentNote(pitch);
+            OutputPitchText();
+        }
+
+        private void OutputPitchText()
+        {
+            if (stayTextOutputMode)
+            {
+                if (pitch != 0f)
+                    m_stayTextOutputTimeCounter = -2f;
+                else
+                {
+                    // pitch = 0, timecounter = -2f
+                    if (m_stayTextOutputTimeCounter == -2f)
+                    {
+                        m_stayTextOutputTimeCounter = 0f;
+                        return;
+                    }
+
+                    if ((m_stayTextOutputTimeCounter += Time.deltaTime) < stayTextOutputTime)
+                    {
+                        return;
+                    }
+
+                    m_stayTextOutputTimeCounter = -2f;
+                }
+            }
+
+            if (m_outputPitchValue != null)
+            {
+                string colorText = (note.deviationFreq > 0f ? "<color=#ff7f7f>" : "<color=#7f7f7f>");
+                m_outputPitchValue.text = $"{note.noteName}{note.octave}" +
+                    $" {pitch.ToString("F2")}<size=20>({colorText}{note.deviationFreq.ToString("F2")}</color>)</size>Hz";
+            }
         }
 
         private void PitchDetection()

@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace InstrumentalAssistant
 {
-    public class MenuGroup : MonoBehaviour
+    public class PageGroup : MonoBehaviour
     {
         #region UnityObjectsFromInspector
         [SerializeField]

@@ -13,14 +13,19 @@ namespace InstrumentalAssistant
     public class PitchVisualization : MonoBehaviour
     {
         public bool stayMode = true;
-        public float maxScreenWidth = 1f;
+        public float stayTime = 2f;
+
+        [Range(0f, 1f)]
+        public float screenWidthPercentage = 1f;
+
         public float maxYScale = 5f;
 
-        private bool hasResult = false;
 
         private Queue<float> m_elementYPosQueue = new Queue<float>();
 
         private Vector2 m_screenSize = new Vector2();
+
+        private float m_stayTimeCounter = 0f;
 
 
         #region UnityObjectFromInspector
@@ -28,8 +33,7 @@ namespace InstrumentalAssistant
         private int m_elementCount = 500;
         [SerializeField]
         private PitchDetector m_pitchDetector;
-        [SerializeField]
-        private Text m_outputPitchValue;
+        
         [SerializeField]
         private UILineRenderer m_uiLineRenderer;
         [SerializeField]
@@ -42,7 +46,7 @@ namespace InstrumentalAssistant
         private void Start()
         {
             m_screenSize = new Vector2(Screen.width, Screen.height);
-            float midHorizontalPos = Screen.width * maxScreenWidth * 0.5f;
+            float midHorizontalPos = Screen.width * screenWidthPercentage * 0.5f;
 
             m_uiLineRenderer.Points = new Vector2[m_elementCount * 2];
             for (int i = 0; i < m_elementCount * 2; ++i)
@@ -61,7 +65,7 @@ namespace InstrumentalAssistant
 
         private void ResizeVisualWidth()
         {
-            float midHorizontalPos = Screen.width * maxScreenWidth * 0.5f;
+            float midHorizontalPos = Screen.width * screenWidthPercentage * 0.5f;
 
             for (int i = 0; i < m_elementCount * 2; ++i)
             {
@@ -86,8 +90,24 @@ namespace InstrumentalAssistant
 
             if (stayMode)
             {
-                if (hasResult && m_pitchDetector.pitch == 0f)
-                    return;
+                if (m_pitchDetector.pitch != 0f)
+                    m_stayTimeCounter = -2f;
+                else
+                {
+                    // pitch = 0, timecounter = -2f
+                    if (m_stayTimeCounter == -2f)
+                    {
+                        m_stayTimeCounter = 0f;
+                        return;
+                    }
+
+                    if ((m_stayTimeCounter += Time.deltaTime) < stayTime)
+                    {
+                        return;
+                    }
+
+                    m_stayTimeCounter = -2f;
+                }
             }
 
             for (int i = 0; i < m_elementCount * 2; ++i)
@@ -99,14 +119,8 @@ namespace InstrumentalAssistant
 
             m_uiLineRenderer.SetAllDirty();
 
-            var equal = new EqualTemperamentNote(m_pitchDetector.pitch);
-            m_outputPitchValue.text = $"Note: {equal.noteName}{equal.octave} ({equal.deviationFreq.ToString("F2")})" +
-                $" Freq = {m_pitchDetector.pitch.ToString("F2")} Hz";
-
-            hasResult = true;
-
             m_elementYPosQueue.Dequeue();
-            m_elementYPosQueue.Enqueue(equal.deviationFreq * maxYScale);
+            m_elementYPosQueue.Enqueue(m_pitchDetector.note.deviationFreq * maxYScale);
         }
     }
 }

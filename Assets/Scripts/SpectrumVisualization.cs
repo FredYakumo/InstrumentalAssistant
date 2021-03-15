@@ -11,56 +11,94 @@ namespace InstrumentalAssistant
 {
     public class SpectrumVisualization : MonoBehaviour
     {
-        public float maxScale = 100f;
         public bool stayMode = true;
+        public float stayTime = 2f;
 
-        private bool hasResult = false;
+        [Range(0f, 1f)]
+        public float screenWidthPercentage = 100f;
+
+        public float maxYScale = 3f;
+
+        private Vector2 m_screenSize = new Vector2();
 
         private RectTransform[] m_elements;
-        [SerializeField]
-        private float m_elementInterval = 1f;
+
+        private float m_stayTimeCounter = 0f;
+
 
         #region UnityObjectFromInspector
         [SerializeField]
         private RectTransform m_elementPrefab;
         [SerializeField]
         private PitchDetector m_pitchDetector;
-        [SerializeField]
-        private Text m_outputPitchValue;
         #endregion
 
         private void Start()
         {
             m_elements = new RectTransform[m_pitchDetector.binSize];
 
+            float horEndPos = Screen.width * screenWidthPercentage;
+
             for (int i = 0; i < m_elements.Length; ++i)
             {
                 RectTransform rectTransform = Instantiate(m_elementPrefab);
-                rectTransform.position = transform.position + Vector3.right * i * m_elementInterval;
+                rectTransform.position = transform.position + Vector3.right * horEndPos * ((float)i / m_elements.Length);
                 rectTransform.SetParent(transform);
                 rectTransform.name = $"SampleElement[{i}]";
                 m_elements[i] = rectTransform;
             }
         }
 
+        private void ResizeVisualWidth()
+        {
+            float horEndPos = Screen.width * screenWidthPercentage;
+            for (int i = 0; i < m_elements.Length; ++i)
+            {
+                m_elements[i].position = transform.position + Vector3.right * horEndPos * ((float)i / m_elements.Length);
+            }
+        }
+
         private void Update()
         {
+            if (m_screenSize.x != Screen.width)
+            {
+                m_screenSize.x = Screen.width;
+                ResizeVisualWidth();
+            }
+
+            if (m_screenSize.x != Screen.width)
+            {
+                m_screenSize.x = Screen.width;
+                ResizeVisualWidth();
+            }
+
             if (stayMode)
             {
-                if (hasResult && m_pitchDetector.pitch == 0f)
-                    return;
+                if (m_pitchDetector.pitch != 0f)
+                    m_stayTimeCounter = -2f;
+                else
+                {
+                    // pitch = 0, timecounter = -2f
+                    if (m_stayTimeCounter == -2f)
+                    {
+                        m_stayTimeCounter = 0f;
+                        return;
+                    }
+
+                    if ((m_stayTimeCounter += Time.deltaTime) < stayTime)
+                    {
+                        return;
+                    }
+
+                    m_stayTimeCounter = -2f;
+                }
             }
 
             for (int i = 0; i < m_elements.Length; ++i)
             {
-                m_elements[i].localScale = new Vector3(1f, m_pitchDetector.spectrums[i] * maxScale + 2, 0f);
+                m_elements[i].localScale = new Vector3(1f, m_pitchDetector.spectrums[i] * maxYScale + 2, 0f);
             }
 
-            var equal = new EqualTemperamentNote(m_pitchDetector.pitch);
-            m_outputPitchValue.text = $"Note: {equal.noteName}{equal.octave} ({equal.deviationFreq.ToString("F2")})" +
-                $" Freq = {m_pitchDetector.pitch.ToString("F2")} Hz";
-
-            hasResult = true;
         }
     }
 }
