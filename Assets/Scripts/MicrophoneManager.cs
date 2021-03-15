@@ -14,10 +14,10 @@ namespace InstrumentalAssistant
         #region UnityObjectFromInspector
         [SerializeField]
         private AudioSource m_audioSource;
-        /*
+
         [SerializeField]
         private AudioMixer m_masterMixer;
-        */
+
         #endregion
 
 
@@ -27,10 +27,10 @@ namespace InstrumentalAssistant
             {
                 m_audioSource.clip = Microphone.Start(Microphone.devices[0], true, 10, AudioSettings.outputSampleRate);
                 m_audioSource.loop = true;
-                /*
+
                 if (m_masterMixer != null)
-                    m_masterMixer.SetFloat("masterVolume", -80f);
-                */
+                    m_masterMixer.SetFloat("Volume", -80f);
+
                 StartCoroutine(WaitForMicrophoneStart());
             }
         }

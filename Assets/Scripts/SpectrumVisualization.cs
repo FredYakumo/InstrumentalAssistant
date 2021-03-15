@@ -9,7 +9,7 @@ using InstrumentalAssistant.Utils;
 
 namespace InstrumentalAssistant
 {
-    public class Visualization : MonoBehaviour
+    public class SpectrumVisualization : MonoBehaviour
     {
         public float maxScale = 100f;
         public bool stayMode = true;
@@ -33,7 +33,7 @@ namespace InstrumentalAssistant
         {
             m_elements = new RectTransform[m_pitchDetector.binSize];
 
-            for (uint i = 0; i < m_elements.Length; ++i)
+            for (int i = 0; i < m_elements.Length; ++i)
             {
                 RectTransform rectTransform = Instantiate(m_elementPrefab);
                 rectTransform.position = transform.position + Vector3.right * i * m_elementInterval;
@@ -51,7 +51,7 @@ namespace InstrumentalAssistant
                     return;
             }
 
-            for (uint i = 0; i < m_elements.Length; ++i)
+            for (int i = 0; i < m_elements.Length; ++i)
             {
                 m_elements[i].localScale = new Vector3(1f, m_pitchDetector.spectrums[i] * maxScale + 2, 0f);
             }
