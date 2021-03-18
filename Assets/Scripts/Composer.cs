@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 using InstrumentalAssistant.Utils;
 
 namespace InstrumentalAssistant
@@ -12,6 +13,7 @@ namespace InstrumentalAssistant
     {
         public Action<NoteValue> onNewNote = null;
         public Action<NoteValue> onCombindNote = null;
+        public Action<NoteValue> onNoteEnd = null;
 
         public float minNewNoteDeltaTime = 0.2f;
         public float minNewNotePitch = 6f;
@@ -19,20 +21,19 @@ namespace InstrumentalAssistant
 
         public float m_timethreshold = 0.1f;
 
-        public int bpm
+        public int notePerMinute
         {
             get
             {
-                if (m_musicSheet.Count <= 1)
-                    return 0;
-
-                return Mathf.RoundToInt(60f * m_musicSheet.Count / (m_musicSheet[m_musicSheet.Count - 1].startTime - m_musicSheet[0].startTime));
+                return m_notePerMinute;
             }
         }
 
         #region UnityObjectFromInspector
         [SerializeField]
         private PitchDetector m_pitchDetector;
+        [SerializeField]
+        private Text m_notePerMinuteText = null;
         #endregion
 
         /// <summary>
@@ -44,10 +45,12 @@ namespace InstrumentalAssistant
 
         private float m_lastVailedTimePoint = 0f;
 
+        private int m_notePerMinute = 0;
 
         private void Start()
         {
-            onNewNote += (NoteValue n) => Debug.Log($"New note: {n.note.noteName}{n.note.octave} - duration: {n.duration}, startTime: {n.startTime}");
+            if (m_notePerMinuteText != null)
+                onNewNote += (NoteValue n) => m_notePerMinuteText.text = $"Note per Minute: {notePerMinute}";
         }
 
         private bool MinConditionCheck()
@@ -61,7 +64,6 @@ namespace InstrumentalAssistant
 
         private void FixedUpdate()
         {
-            Debug.Log($"BPM: {bpm}");
             var note = m_pitchDetector.note;
             if (m_onProcessNote == null)
             {
@@ -69,6 +71,7 @@ namespace InstrumentalAssistant
                     return;
                 m_lastVailedTimePoint = Time.fixedTime;
                 m_onProcessNote = new NoteValue(note, 0f, Time.fixedTime);
+                onNewNote?.Invoke(m_onProcessNote);
                 return;
             }
 
@@ -107,10 +110,11 @@ namespace InstrumentalAssistant
                                 return;
                             }
                     }
+                    m_notePerMinute = Mathf.RoundToInt(60f * m_musicSheet.Count / (m_musicSheet[m_musicSheet.Count - 1].startTime - m_musicSheet[0].startTime));
                 }
 
                 m_musicSheet.Add(m_onProcessNote);
-                onNewNote?.Invoke(m_onProcessNote);
+                onNoteEnd?.Invoke(m_onProcessNote);
                 m_onProcessNote = null;
             }
             

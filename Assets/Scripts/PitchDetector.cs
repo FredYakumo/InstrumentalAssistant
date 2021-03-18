@@ -69,14 +69,6 @@ namespace InstrumentalAssistant
             }
         }
 
-        public float bpm
-        {
-            get
-            {
-                return m_bpm;
-            }
-        }
-
         public float m_newNotePitchThreshold = 6f;
         public float m_newNoteVolumnThreshold = 10f;
 
@@ -130,8 +122,6 @@ namespace InstrumentalAssistant
         private float[] m_spectrum;
         [SerializeField]
         private float m_pitch;
-        [SerializeField]
-        private float m_bpm;
         [SerializeField]
         private float m_volume = 0f;
 

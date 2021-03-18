@@ -66,12 +66,6 @@ namespace InstrumentalAssistant
                 ResizeVisualWidth();
             }
 
-            if (m_screenSize.x != Screen.width)
-            {
-                m_screenSize.x = Screen.width;
-                ResizeVisualWidth();
-            }
-
             if (stayMode)
             {
                 if (m_pitchDetector.pitch != 0f)
