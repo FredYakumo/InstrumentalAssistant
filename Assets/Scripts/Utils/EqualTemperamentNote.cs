@@ -47,6 +47,7 @@ namespace InstrumentalAssistant.Utils
         public EqualTemperamentNote(float freq)
         {
             octave = Mathf.FloorToInt(Mathf.Sqrt(Mathf.Floor(freq / standardA1Pitch)));
+            frequency = freq;
 
             // Find near
             var octs = GetOctaveFreqs(octave);

@@ -55,8 +55,10 @@ namespace InstrumentalAssistant
 
         public float volume
         {
-            get;
-            private set;
+            get
+            {
+                return m_volume;
+            }
         }
 
         public float pitch
@@ -66,6 +68,17 @@ namespace InstrumentalAssistant
                 return m_pitch;
             }
         }
+
+        public float bpm
+        {
+            get
+            {
+                return m_bpm;
+            }
+        }
+
+        public float m_newNotePitchThreshold = 6f;
+        public float m_newNoteVolumnThreshold = 10f;
 
         public bool stayTextOutputMode = true;
         public float stayTextOutputTime = 2f;
@@ -117,6 +130,10 @@ namespace InstrumentalAssistant
         private float[] m_spectrum;
         [SerializeField]
         private float m_pitch;
+        [SerializeField]
+        private float m_bpm;
+        [SerializeField]
+        private float m_volume = 0f;
 
         private float m_refValue = 0.1f;
         private float m_threshold = 0.01f;
@@ -147,11 +164,13 @@ namespace InstrumentalAssistant
         private void Update()
         {
             PitchDetection();
+
             note = new EqualTemperamentNote(pitch);
-            OutputPitchText();
+            
+            OutputPitchText(note);
         }
 
-        private void OutputPitchText()
+        private void OutputPitchText(EqualTemperamentNote n)
         {
             if (stayTextOutputMode)
             {
@@ -177,9 +196,9 @@ namespace InstrumentalAssistant
 
             if (m_outputPitchValue != null)
             {
-                string colorText = (note.deviationFreq > 0f ? "<color=#ff7f7f>" : "<color=#7f7f7f>");
-                m_outputPitchValue.text = $"{note.noteName}{note.octave}" +
-                    $" {pitch.ToString("F2")}<size=20>({colorText}{note.deviationFreq.ToString("F2")}</color>)</size>Hz";
+                string colorText = (n.deviationFreq > 0f ? "<color=#ff7f7f>" : "<color=#7f7f7f>");
+                m_outputPitchValue.text = $"{n.noteName}{n.octave}" +
+                    $" {pitch.ToString("F2")}<size=20>({colorText}{n.deviationFreq.ToString("F2")}</color>)</size>Hz";
             }
         }
 
@@ -195,7 +214,7 @@ namespace InstrumentalAssistant
 
             rms = Mathf.Sqrt(sum / sampleSize);
 
-            volume = Mathf.Clamp(20 + Mathf.Log10(rms / m_refValue), -160f, Mathf.Infinity);
+            m_volume = Mathf.Clamp(20 + Mathf.Log10(rms / m_refValue), -160f, Mathf.Infinity);
 
             m_audioSource.GetSpectrumData(m_spectrum, 0, FFTWindow.BlackmanHarris);
 
