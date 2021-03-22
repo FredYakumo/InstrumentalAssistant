@@ -20,6 +20,8 @@ namespace InstrumentalAssistant
 
         public float maxYScale = 5f;
 
+        public float maxD = 10f;
+
 
         private Queue<float> m_elementYPosQueue = new Queue<float>();
 
@@ -120,7 +122,7 @@ namespace InstrumentalAssistant
             m_uiLineRenderer.SetAllDirty();
 
             m_elementYPosQueue.Dequeue();
-            m_elementYPosQueue.Enqueue(m_pitchDetector.note.deviationFreq * maxYScale);
+            m_elementYPosQueue.Enqueue(Mathf.Clamp(m_pitchDetector.note.deviationFreq * maxYScale, -maxYScale * maxD,  maxYScale * maxD));
         }
     }
 }

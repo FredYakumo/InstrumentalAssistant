@@ -17,6 +17,7 @@ namespace InstrumentalAssistant
         [Range(0f, 1f)]
         public float screenWidthPercentage = 100f;
 
+
         public float maxYScale = 3f;
 
         private Vector2 m_screenSize = new Vector2();
@@ -24,6 +25,11 @@ namespace InstrumentalAssistant
         private RectTransform[] m_elements;
 
         private float m_stayTimeCounter = 0f;
+
+
+        #region Settings
+        private int m_displaySize = 1024;
+        #endregion
 
 
         #region UnityObjectFromInspector
@@ -35,7 +41,7 @@ namespace InstrumentalAssistant
 
         private void Start()
         {
-            m_elements = new RectTransform[m_pitchDetector.binSize];
+            m_elements = new RectTransform[m_displaySize];
 
             float horEndPos = Screen.width * screenWidthPercentage;
 

@@ -240,7 +240,7 @@ namespace InstrumentalAssistant
                 }
             }
 
-            // Convert index to frequency
+            // Convert bin freq to real frequency
             m_pitch = freq * (m_samplerate / 2f) / binSize;
             peaks.Clear();
         }
